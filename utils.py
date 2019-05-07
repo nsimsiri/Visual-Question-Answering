@@ -1,11 +1,20 @@
 import numpy as np
 from PIL import Image
+import os
 import h5py
 import pickle
 import json
 import torch
 import sys
 import matplotlib.pyplot as plt
+from torchvision import transforms
+
+default_transform = transforms.Compose([
+                transforms.RandomCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.485, 0.456, 0.406),
+                                (0.229, 0.224, 0.225))])
 
 def img_data_2_mini_batch(pos_mini_batch, img_data, batch_size):
     pos_mini_batch = pos_mini_batch.numpy()
@@ -26,7 +35,7 @@ def img_data_2_mini_batch(pos_mini_batch, img_data, batch_size):
 
 #     return img_data
 
-def imgs2batch(img_names, img_positions, transform=None):
+def imgs2batch(img_names, img_positions, transform=default_transform):
     img_data = []
     for pos in img_positions:
         img = imread('data/' + img_names[pos], transform=transform)
@@ -37,21 +46,15 @@ def imgs2batch(img_names, img_positions, transform=None):
 
 
 
-def imread(path, transform=None):
+def imread(path, transform=default_transform):
+    if not os.path.exists(path):
+        raise Exception("IMG_LOAD_ERR - Image File idx={}: [{}] not found".format(idx, img_path))
     img = Image.open(path)
     img = img.resize((256, 256))
-    
     if (transform is not None):
         img = transform(img)
-    
+
     img = np.array(img)#, dtype=float)
-
-    # if (transform is None):   
-    #     if img.ndim > 2 and img.shape[2] == 4:
-    #         img = img[:, :, 0:3]
-    #     if img.ndim == 2:
-    #         img = gray2rgb(img)
-
     return img
 
 

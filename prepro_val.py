@@ -25,12 +25,6 @@ def build_vocab_question(imgs_val, include_map=False):
             counts[w] = counts.get(w, 0) + 1
 
     # cw = sorted([(count, w) for w, count in counts.items()], reverse=True)
-    # print('top words and their counts:')
-    # print('\n'.join(map(str, cw[:20])))
-
-    # print some stats
-    # total_words = sum(counts.values())
-    # print('total words:', total_words)
     bad_words = [w for w, n in counts.items() if n <= count_thr]
     vocab = [w for w, n in counts.items() if n > count_thr]
     bad_count = sum(counts[w] for w in bad_words)
@@ -120,7 +114,6 @@ def get_unqiue_img(imgs_val):
         img_pos[i] = idx
 
     return unique_img, img_pos
-
 
 # =========================================================================
 
