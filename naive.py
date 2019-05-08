@@ -37,13 +37,12 @@ class Dec(nn.Module):
         unsq = features.unsqueeze(1)
         embeddings = torch.cat((features.unsqueeze(1), embeddings), 1)
         packed = pack_padded_sequence(embeddings, lengths, batch_first=True) 
-        # print 'packed',packed
 
         hiddens, (hn, cn) = self.lstm(packed)
         tmp = torch.nn.utils.rnn.pad_packed_sequence(hiddens)
 
         hiddens, hidden_lengths = tmp
-        outputs = self.linear(hiddens[0])
+        outputs = self.linear(hn[-1])
         outputs = F.log_softmax(outputs, dim=1)
         return outputs
 
@@ -62,6 +61,6 @@ class EncDec(nn.Module):
     
     def forward(self, images, questions, lengths):
         img_features = self.encoder(images)
-        print("img_features", img_features.shape)
         logits = self.decoder(img_features, questions, lengths)
         return logits 
+  
