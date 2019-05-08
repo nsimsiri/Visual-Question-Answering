@@ -53,12 +53,13 @@ class Dec(nn.Module):
         self.glimpses = 2
         self.debug = debug
 
-        self.question_encoder = QuestionEncoder(ques_vocab_size, embedding_features, lstm_features, lstm_layers, debug)
+        self.question_encoder = QuestionEncoder(ques_vocab_size, embedding_features, lstm_features, lstm_layers, debug, drop=0.5)
         self.attention_model = Attention(self.image_features,
                                          lstm_features,
                                          attention_features,
                                          self.glimpses,
-                                         debug=debug)
+                                         debug=debug,
+                                         drop=0.5,)
 
         self.classifier = Classifier(self.glimpses * self.image_features + lstm_features, lstm_features, ans_vocab_size, drop=0.5)
 
@@ -83,7 +84,7 @@ class Dec(nn.Module):
 
 
 class QuestionEncoder(nn.Module):
-    def __init__(self, vocab_size, embed_size, hidden_size, num_layers, debug, drop=0.0):
+    def __init__(self, vocab_size, embed_size, hidden_size, num_layers, debug, drop):
         super(QuestionEncoder, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size)
         self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
@@ -105,7 +106,7 @@ class QuestionEncoder(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, features_maps, question_features, attention_features, glimpses, debug, drop=0.0):
+    def __init__(self, features_maps, question_features, attention_features, glimpses, debug, drop):
         super(Attention, self).__init__()
         self.v_conv = nn.Conv2d(features_maps, attention_features, 1, bias=False)
         self.q_linear = nn.Linear(question_features, attention_features)
@@ -182,7 +183,7 @@ def tile_2d(feature_maps, feature_vec):
 
 
 class Classifier(nn.Sequential):
-    def __init__(self, in_features, mid_features, out_features, drop=0.0):
+    def __init__(self, in_features, mid_features, out_features, drop):
         super(Classifier, self).__init__()
         self.add_module('drop1', nn.Dropout(drop))
         self.add_module('lin1', nn.Linear(in_features, mid_features))
