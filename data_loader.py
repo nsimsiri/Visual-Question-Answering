@@ -158,7 +158,7 @@ class VQADataSet():
         for question_id, question_json in tqdm(self.question_maps.items()):
             question = question_json['question']
             question_tokens = clean(question)
-            question_json['tokens'] = question_tokens# ["<start>"] + question_tokens + ["<end>"]
+            question_json['tokens'] = ["<start>"] + question_tokens + ["<end>"]
             self.max_length = max(len(question_json['tokens']), self.max_length)
             q_vocab = q_vocab.union(set(question_tokens))
         

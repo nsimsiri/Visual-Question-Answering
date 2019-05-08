@@ -25,10 +25,22 @@ class Enc(nn.Module):
 
 
 class Dec(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length=26):
+    def __init__(self, embed_size, 
+                       hidden_size, 
+                       vocab_size, 
+                       ans_vocab_size, 
+                       num_layers, 
+                       max_seq_length=26,
+                       rnn_type='lstm'):
         super(Dec, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size)
-        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+        if rnn_type == 'lstm':
+            self.rnn = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+        elif rnn_type == 'gru':
+            self.rnn = nn.GRU(embed_size, hidden_size, batch_first=True)
+        else: 
+            self.rnn = nn.RNN(embed_size, hidden_size, batch_first=True)
+            
         self.linear = nn.Linear(hidden_size, ans_vocab_size)
         self.max_seg_length = max_seq_length
         
@@ -41,7 +53,7 @@ class Dec(nn.Module):
         packed = pack_padded_sequence(embeddings, lengths, batch_first=True) 
         # print 'packed',packed
 
-        hiddens, (hn, cn) = self.lstm(packed)
+        hiddens, (hn, cn) = self.rnn(packed)
         tmp = torch.nn.utils.rnn.pad_packed_sequence(hiddens)
 
         hiddens, hidden_lengths = tmp
@@ -50,7 +62,13 @@ class Dec(nn.Module):
         return outputs
 
 class EncDec(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length=26):
+    def __init__(self, embed_size, 
+                       hidden_size, 
+                       vocab_size, 
+                       ans_vocab_size, 
+                       num_layers, 
+                       max_seq_length=26,
+                       rnn_type='lstm'):
         super(EncDec, self).__init__()
         self.embed_size     = embed_size
         self.hidden_size    = hidden_size
@@ -60,7 +78,7 @@ class EncDec(nn.Module):
         self.max_seq_length = max_seq_length
 
         self.encoder = Enc(embed_size)
-        self.decoder = Dec(embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length)
+        self.decoder = Dec(embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length, rnn_type)
     
     def forward(self, images, questions, lengths):
         img_features = self.encoder(images)
