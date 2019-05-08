@@ -53,8 +53,9 @@ def collate_sort_by_q_wrap(dataset):
 
 class VQADataSet():
     def __init__(self, ann_path=ann_path, ques_path=q_path, img_path=i_path, 
-                 TEST_SPLIT=0.2, Q=5):
+                 TEST_SPLIT=0.2, Q=5, one_answer=True):
         t0 = time.time()
+        self.one_answer = one_answer
         self.answer_maps = []
         self.question_maps = {}
         self.splits = {'train':[], 'test':[]}
@@ -133,8 +134,9 @@ class VQADataSet():
                     ans['question_id'] = question_id
                     answers.append(ans)
                 answer_set.add(ans_text)
-                break
-
+                if (self.one_answer):
+                    break
+                
             if (len(answers) == 0): continue
             question = self.qdf.query('question_id == {}'.format(question_id))
 
