@@ -16,7 +16,6 @@ class Enc(nn.Module):
         self.bn = nn.BatchNorm1d(embed_size, momentum=0.01)
         
     def forward(self, images):
-        """Extract feature vectors from input images."""
         features = None
         with torch.no_grad():
             features = self.resnet(images)
@@ -27,16 +26,14 @@ class Enc(nn.Module):
 
 class Dec(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length=26):
-        """Set the hyper-parameters and build the layers."""
         super(Dec, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size)
         self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
         self.linear = nn.Linear(hidden_size, ans_vocab_size)
         self.max_seg_length = max_seq_length
         
-    def forward(self, features, captions, lengths):
-        """Decode image feature vectors and generates captions."""
-        embeddings = self.embed(captions)
+    def forward(self, features, question, lengths):
+        embeddings = self.embed(question)
         unsq = features.unsqueeze(1)
         embeddings = torch.cat((features.unsqueeze(1), embeddings), 1)
         packed = pack_padded_sequence(embeddings, lengths, batch_first=True) 
@@ -49,3 +46,22 @@ class Dec(nn.Module):
         outputs = self.linear(hiddens[0])
         outputs = F.log_softmax(outputs, dim=1)
         return outputs
+
+class EncDec(nn.Module):
+    def __init__(self, embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length=26):
+        super(EncDec, self).__init__()
+        self.embed_size     = embed_size
+        self.hidden_size    = hidden_size
+        self.vocab_size     = vocab_size
+        self.ans_vocab_size = ans_vocab_size
+        self.num_layers     = num_layers
+        self.max_seq_length = max_seq_length
+
+        self.encoder = Enc(embed_size)
+        self.decoder = Dec(embed_size, hidden_size, vocab_size, ans_vocab_size, num_layers, max_seq_length)
+    
+    def forward(self, images, questions, lengths):
+        img_features = self.encoder(images)
+        print("img_features", img_features.shape)
+        logits = self.decoder(img_features, questions, lengths)
+        return logits 
