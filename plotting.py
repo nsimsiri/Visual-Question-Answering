@@ -13,6 +13,7 @@ def validate_loss_over_n_dict_keys(loss_over_n_epochs: dict):
 def plot_loss_over_n_epochs(loss_over_n_epochs: dict,
                             title=None,
                             file_path=None,
+                            hard_key = None,
                             fig_size: tuple = (10, 6)):
 
 #     validate_loss_over_n_dict_keys(loss_over_n_epochs)
@@ -22,15 +23,15 @@ def plot_loss_over_n_epochs(loss_over_n_epochs: dict,
     ax.set_ylabel('Loss')
     if title:
         ax.set_title(title)
-
-    first_key = next(iter(loss_over_n_epochs.keys()))
-    n_epochs = len(loss_over_n_epochs[first_key])
+        
+    if hard_key is None:
+        hard_key = next(iter(loss_over_n_epochs.keys()))
+    n_epochs = len(loss_over_n_epochs[hard_key])
 
     for key in loss_over_n_epochs:
         # If nothing to plot just skip that split.
         if len(loss_over_n_epochs[key]) == 0:
             continue
-
         ax.plot(range(1, n_epochs + 1), loss_over_n_epochs[key], label=key)
 
     plt.legend()
