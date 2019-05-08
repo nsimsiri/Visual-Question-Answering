@@ -32,11 +32,14 @@ class Dec(nn.Module):
         self.linear = nn.Linear(hidden_size, ans_vocab_size)
         self.max_seg_length = max_seq_length
         
-    def forward(self, features, question, lengths):
-        embeddings = self.embed(question)
+    def forward(self, features, captions, lengths):
+        batch_size = captions.size(0)
+        embeddings = self.embed(captions)
         unsq = features.unsqueeze(1)
+
         embeddings = torch.cat((features.unsqueeze(1), embeddings), 1)
         packed = pack_padded_sequence(embeddings, lengths, batch_first=True) 
+        # print 'packed',packed
 
         hiddens, (hn, cn) = self.lstm(packed)
         tmp = torch.nn.utils.rnn.pad_packed_sequence(hiddens)
@@ -64,3 +67,8 @@ class EncDec(nn.Module):
         logits = self.decoder(img_features, questions, lengths)
         return logits 
   
+    def get_parameters(self):
+        params = list(self.decoder.parameters()) +\
+                 list(self.encoder.linear.parameters()) +\
+                 list(self.encoder.bn.parameters())
+        return params
