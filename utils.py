@@ -49,7 +49,7 @@ def imgs2batch(img_names, img_positions, transform=default_transform):
 def imread(path, transform=default_transform):
     if not os.path.exists(path):
         raise Exception("IMG_LOAD_ERR - Image File idx={}: [{}] not found".format(idx, img_path))
-    img = Image.open(path).rgb()
+    img = Image.open(path).convert(
     img = img.resize((256, 256))
     if (transform is not None):
         img = transform(img)
