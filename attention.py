@@ -149,17 +149,17 @@ def apply_attention(features_maps, attention, debug):
     n, c = features_maps.size()[:2]
     glimpses = attention.size(1)
     # print('n, c, glimpses:', n, c, glimpses)
-    features_maps = features_maps.view(n, 1, c, -1) # [n, 1, c, s]
+    features_maps = features_maps.view(n, 1, c, -1)
     # print('features maps:', features_maps.size())
     attention = attention.view(n, glimpses, -1)
     # print('attention:', attention.size())
     attention = F.softmax(attention, dim=-1)
     # print('attention:', attention.size())
-    attention = attention.unsqueeze(2) # [n, g, 1, s]
+    attention = attention.unsqueeze(2) 
     # print('attention:', attention.size())
-    weighted = attention * features_maps # [n, g, v, s]
+    weighted = attention * features_maps 
     # print('weighted:', weighted.size())
-    weighted_mean = weighted.sum(dim=-1) # [n, g, v]
+    weighted_mean = weighted.sum(dim=-1) 
     # print('weighted mean:', weighted_mean.size())
     # print('weighted mean return:', weighted_mean.view(n, -1).size())
 
